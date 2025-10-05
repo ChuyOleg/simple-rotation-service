@@ -1,0 +1,25 @@
+starlette==0.37.2
+fastapi==0.111.1      # Web framework for the API
+uvicorn==0.25.0       # ASGI server to run FastAPI
+openai==1.1.1       # OpenAI Python SDK (Open AI interaction)
+# openai==0.28.1       # OpenAI Python SDK (Open Router DeepSeek interaction)
+asyncpg==0.29.0
+httpx==0.25.0
+
+# retry
+backoff==2.2.1
+
+# CRON jobs
+apscheduler==3.10.4
+
+# Configuration and environment
+python-dotenv==1.0.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Logging and monitoring
+structlog==23.2.0
+colorama==0.4.6
+
+# Encryption and decryption
+cryptography==46.0.1
