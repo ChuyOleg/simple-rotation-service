@@ -53,7 +53,7 @@ class MigrationManager:
     async def get_applied_migrations(self, conn: asyncpg.Connection) -> List[int]:
         """Get list of already applied migration versions."""
         rows = await conn.fetch("""
-            SELECT version FROM migrations 
+            SELECT version FROM migrations_for_rotation 
             ORDER BY version
         """)
         return [row['version'] for row in rows]
@@ -66,7 +66,7 @@ class MigrationManager:
     ) -> None:
         """Mark a migration as applied."""
         await conn.execute("""
-            INSERT INTO migrations (version, migration_name)
+            INSERT INTO migrations_for_rotation (version, migration_name)
             VALUES ($1, $2)
         """, version, migration_name)
     

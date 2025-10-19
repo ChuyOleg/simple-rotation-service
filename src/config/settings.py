@@ -3,11 +3,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PostgresSettings(BaseSettings):
-    host: str = Field(alias="LOCAL_POSTGRES_HOST")
-    port: int = Field(alias="LOCAL_POSTGRES_PORT")
-    database: str = Field(alias="LOCAL_POSTGRES_DATABASE")
-    username: str = Field(alias="LOCAL_POSTGRES_USERNAME")
-    password: str = Field(alias="LOCAL_POSTGRES_PASSWORD")
+    host: str = Field(alias="POSTGRES_HOST")
+    port: int = Field(alias="POSTGRES_PORT")
+    database: str = Field(alias="POSTGRES_DATABASE")
+    username: str = Field(alias="POSTGRES_USERNAME")
+    password: str = Field(alias="POSTGRES_PASSWORD")
 
     @property
     def connection_string(self) -> str:
