@@ -1,6 +1,6 @@
 from typing import Dict, Any, Optional, List
 
-from src.database.pool.connection_pool_manager import connection_pool_manager, ConnectionPoolManager
+from src.database.pool.connection_pool_manager import connection_pool_manager_instance, ConnectionPoolManager
 from src.mapping.api_token_mapper import map_db_row_to_api_token_dict
 from src.model.api_provider import ApiProvider
 
@@ -20,7 +20,7 @@ class TokenRepository:
             row = await conn.fetchrow(query, token_id)
             return map_db_row_to_api_token_dict(row) if row else None
 
-    async def get_random_by_api_provider(self, api_provider: ApiProvider) -> Optional[Dict[str, Any]]:
+    async def get_random_non_locked_by_api_provider(self, api_provider: ApiProvider) -> Optional[Dict[str, Any]]:
         query = """
          SELECT id, api_provider, token_encrypted
          FROM tokens
@@ -81,4 +81,4 @@ class TokenRepository:
             await conn.execute(query, token_id)
 
 
-token_repository = TokenRepository(connection_pool_manager)
+token_repository = TokenRepository(connection_pool_manager_instance)

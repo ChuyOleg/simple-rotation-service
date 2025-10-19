@@ -33,7 +33,6 @@ async def get_token(api_provider: ApiProvider):
 # ToDo: 03/10 For testing only, delete it.
 @router.get("/tokens/locked")
 async def get_locked_token():
-    logger.info("33333333333333333333")
     locked_token = await token_service.get_locked_tokens()
     return locked_token
 
