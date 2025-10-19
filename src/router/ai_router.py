@@ -11,6 +11,7 @@ router = APIRouter()
 
 class RequestBody(BaseModel):
     api_provider: ApiProvider
+    model: str
     raw_event: str
 
 
@@ -23,4 +24,4 @@ ai_processors_map: dict[ApiProvider, AiProcessorService] = {
 @router.post("/ai/processing")
 async def process_event_by_ai(body: RequestBody):
     service: AiProcessorService = ai_processors_map.get(body.api_provider)
-    return await service.process(body.raw_event)
+    return await service.process(body.model, body.raw_event)

@@ -42,4 +42,4 @@ class ConnectionPoolManager:
             logger.info("Postgres connection pool closed")
 
 
-connection_pool_manager = ConnectionPoolManager(settings.postgres.connection_string)
+connection_pool_manager_instance = ConnectionPoolManager(settings.postgres.connection_string)

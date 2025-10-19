@@ -16,22 +16,23 @@ class TokenService:
         self._repository = repository
         self._encryptor = encryptor
 
-    async def get_by_id(self, token_id: int) -> ApiToken:
+    async def get_by_id(self, token_id: int) -> Optional[ApiToken]:
         token_info: Optional[Dict[str, Any]] = await self._repository.get_by_id(token_id)
 
         if token_info is None:
             logger.warning(f"Token not found for id={token_id}")
-            return ApiToken(token_id=0, api_provider=ApiProvider.UNKNOWN, value='dummyToken')
+            return None
 
         token_value = self._encryptor.decrypt(token_info['token_encrypted'])
         return map_api_token_dict_to_api_token(token_info, token_value)
 
-    async def get_random_by_api_provider(self, api_provider: ApiProvider) -> ApiToken:
-        token_info: Optional[Dict[str, Any]] = await self._repository.get_random_by_api_provider(api_provider)
+    async def get_random_by_api_provider(self, api_provider: ApiProvider) -> Optional[ApiToken]:
+        token_info: Optional[Dict[str, Any]] =\
+            await self._repository.get_random_non_locked_by_api_provider(api_provider)
 
         if token_info is None:
             logger.warning(f"Token not found for {api_provider}")
-            return ApiToken(token_id=0, api_provider=ApiProvider.UNKNOWN, value='dummyToken')
+            return None
 
         token_value = self._encryptor.decrypt(token_info['token_encrypted'])
         return map_api_token_dict_to_api_token(token_info, token_value)
