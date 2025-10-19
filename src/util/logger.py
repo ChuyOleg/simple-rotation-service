@@ -73,5 +73,5 @@ def log_startup_info() -> None:
     logger = get_logger("startup")
     
     logger.info(
-        "Starting UOPP AI Data Processor",
+        "Starting Rotation Service.",
     )
