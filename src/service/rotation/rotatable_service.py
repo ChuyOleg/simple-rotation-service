@@ -12,9 +12,9 @@ class RotatableService(ABC):
 
     # ToDo: 03/10 should be configurable
     @backoff.on_exception(backoff.expo, RetryableException, max_tries=3)
-    async def _process_with_retry(self):
+    async def _process_with_retry(self, *args, **kwargs):
         try:
-            result = await self._process_internal()
+            result = await self._process_internal(*args, **kwargs)
             return result
         except Exception as e:
             await self._handle_exception(e)

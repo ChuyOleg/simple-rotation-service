@@ -42,7 +42,7 @@ class MigrationManager:
     async def create_migrations_table(self, conn: asyncpg.Connection) -> None:
         """Create the migrations tracking table."""
         await conn.execute("""
-            CREATE TABLE IF NOT EXISTS migrations (
+            CREATE TABLE IF NOT EXISTS migrations_for_rotation (
                 id SERIAL PRIMARY KEY,
                 version INTEGER UNIQUE NOT NULL,
                 migration_name VARCHAR(255) NOT NULL,

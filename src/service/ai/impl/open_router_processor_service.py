@@ -59,8 +59,7 @@ class OpenRouterProcessorService(AiProcessorService):
 
 
 # model='deepseek/deepseek-r1:free'
-# model='deepseek/deepseek-chat-v3.1:free'
 open_router_processor_service: AiProcessorService = OpenRouterProcessorService(
-    api_model='deepseek/deepseek-r1:free',
+    api_model='meta-llama/llama-4-scout:free',
     token_management_service=token_service,
     open_router_client_factory=ai_client_factory)
