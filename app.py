@@ -10,6 +10,7 @@ from src.database.pool.connection_pool_manager import connection_pool_manager_in
 from src.exception.exception_handler import InternalException, RetryableException, internal_exception_handler, \
     retryable_exception_handler
 from src.router import token_router, ai_router
+from src.service.rotation.cron.tester_scheduled_job import tester_scheduled_job
 from src.service.rotation.cron.token_scheduled_job import unlock_tokens_scheduled_job
 from src.util.logger import setup_logging, log_startup_info, get_logger
 
@@ -27,9 +28,10 @@ async def lifespan(app: FastAPI):
     logger.info("DBs pool created")
 
     await migration_manager.run_migrations()
-    logger.info("DB migration has been performed for local Postgres.")
+    logger.info("DB migration has been performed for Postgres.")
 
     scheduler.add_job(unlock_tokens_scheduled_job, CronTrigger.from_crontab(settings.rotation.cron))
+    scheduler.add_job(tester_scheduled_job, CronTrigger.from_crontab(settings.rotation_tester.cron))
     scheduler.start()
 
     yield

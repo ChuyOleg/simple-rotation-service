@@ -37,12 +37,19 @@ class RotationSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
+class RotationTesterSettings(BaseSettings):
+    cron: str = Field(alias="ROTATION_TESTER_CRON")
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
 class Settings(BaseSettings):
     """Main application settings."""
 
     postgres: PostgresSettings = Field(default_factory=PostgresSettings)
     token_encryption: TokenEncryptionSettings = Field(default_factory=TokenEncryptionSettings)
     rotation: RotationSettings = Field(default_factory=RotationSettings)
+    rotation_tester: RotationTesterSettings = Field(default_factory=RotationTesterSettings)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

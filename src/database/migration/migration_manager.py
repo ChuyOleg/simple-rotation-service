@@ -5,6 +5,7 @@ import asyncpg
 
 from src.config.settings import settings
 from src.database.migration.migration_script_001 import migration_001_create_ai_tokens_table
+from src.database.migration.migration_script_002 import migration_002_create_ai_api_errors_table
 from src.util.logger import get_logger
 
 logger = get_logger(__name__)
@@ -35,6 +36,7 @@ class MigrationManager:
         """Register all migrations."""
         self.migrations = [
             Migration(1, "create_ai_tokens_table", migration_001_create_ai_tokens_table),
+            Migration(2, "create_ai_api_errors_table", migration_002_create_ai_api_errors_table)
         ]
         # Sort by version
         self.migrations.sort(key=lambda m: m.version)

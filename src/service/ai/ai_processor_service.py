@@ -8,6 +8,7 @@ from src.model.api_provider import ApiProvider
 from src.model.api_token import ApiToken
 from src.model.event import create_system_message_prompt, create_user_message_prompt
 from src.model.ukrainian_event import UkrainianEvent
+from src.repository.ai_api_error_repository import AiApiErrorsRepository
 from src.service.rotation.rotatable_service import RotatableService
 from src.service.rotation.token_service import TokenService
 from src.util.logger import get_logger
@@ -17,9 +18,11 @@ logger = get_logger(__name__)
 
 class AiProcessorService(RotatableService, ABC):
 
-    def __init__(self, api_provider: ApiProvider, base_url: str, token_service: TokenService):
+    def __init__(self, api_provider: ApiProvider, base_url: str,
+                 ai_api_errors_repository: AiApiErrorsRepository, token_service: TokenService):
         self._api_provider = api_provider
         self._base_url = base_url
+        self._ai_api_errors_repository = ai_api_errors_repository
         self._token_service = token_service
         self._api_key = None
         self._active_api_token_id = None
@@ -47,19 +50,21 @@ class AiProcessorService(RotatableService, ABC):
             "max_tokens": 4048,
         }
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{self._base_url}/chat/completions",
-                headers=headers,
-                json=payload,
-            )
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{self._base_url}/chat/completions",
+                    headers=headers,
+                    json=payload)
 
-        response.raise_for_status()
-        data = response.json()
-        logger.info(data)
+            response.raise_for_status()
 
-        return data
-
+            data = response.json()
+            return data
+        except Exception as e:
+            data = response.json()
+            await self._ai_api_errors_repository.save_error(str(data), model)
+            raise e
 
     # ToDo: 19/10 What the behaviour when parallel threads call this method.
     @override
