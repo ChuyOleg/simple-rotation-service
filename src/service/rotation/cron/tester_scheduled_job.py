@@ -1,6 +1,7 @@
 import random
 from typing import List, Dict, Any
 
+from src.config.settings import settings
 from src.repository.event_repository import event_repository
 from src.service.ai.impl.open_router_processor_service import open_router_processor_service
 from src.util.logger import get_logger
@@ -23,7 +24,8 @@ def get_random_model():
 async def tester_scheduled_job():
     logger.info("Running scheduled job for the 'Rotation Service' testing...")
 
-    raw_events: List[Dict[str, Any]] = await event_repository.search_raw_event_with_limit(limit=3)
+    raw_events: List[Dict[str, Any]] = await event_repository.search_raw_event_with_limit(
+        limit=settings.rotation_tester.events_limit)
 
     for raw_event in raw_events:
         try:

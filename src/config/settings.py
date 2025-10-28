@@ -39,6 +39,7 @@ class RotationSettings(BaseSettings):
 
 class RotationTesterSettings(BaseSettings):
     cron: str = Field(alias="ROTATION_TESTER_CRON")
+    events_limit: int = Field(alias="ROTATION_TESTER_EVENTS_LIMIT")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
