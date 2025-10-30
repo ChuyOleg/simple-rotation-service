@@ -3,7 +3,7 @@ from typing import override
 
 import httpx
 
-from src.exception.exception_handler import NotFoundTokenException
+from src.exception.exception_handler import NotFoundTokenException, AiHttpCallException
 from src.model.api_provider import ApiProvider
 from src.model.api_token import ApiToken
 from src.model.event import create_system_message_prompt, create_user_message_prompt
@@ -64,7 +64,7 @@ class AiProcessorService(RotatableService, ABC):
         except Exception as e:
             data = response.json()
             await self._ai_api_errors_repository.save_error(str(data), model)
-            raise e
+            raise AiHttpCallException(data, e)
 
     # ToDo: 19/10 What the behaviour when parallel threads call this method.
     @override
@@ -74,6 +74,8 @@ class AiProcessorService(RotatableService, ABC):
 
         api_token: ApiToken = await self._token_service.get_random_by_api_provider(self._api_provider)
         if api_token is None:
+            self._api_key = None
+            self._active_api_token_id = -1
             raise NotFoundTokenException(f"No API key found for {self._api_provider} in DB.")
 
         self._api_key = api_token.value

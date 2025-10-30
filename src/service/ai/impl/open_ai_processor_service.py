@@ -1,5 +1,6 @@
 from typing import override
 
+from src.exception.exception_handler import AiHttpCallException
 from src.model.api_provider import ApiProvider
 from src.repository.ai_api_error_repository import AiApiErrorsRepository, ai_api_errors_repository
 from src.service.ai.ai_processor_service import AiProcessorService
@@ -17,9 +18,14 @@ class OpenAIProcessorService(AiProcessorService):
         super().__init__(self._API_PROVIDER, self._BASE_URL, ai_api_errors_repo, token_management_service)
 
     @override
-    def _is_rate_limit_exception(self, e: Exception) -> bool:
+    def _is_rate_limit_exception(self, e: AiHttpCallException) -> bool:
         # ToDo: 01/10 Mocked now, add real implementation
         return True
+
+    @override
+    def _is_retryable_exception(self, e: AiHttpCallException) -> bool:
+        # ToDo: 01/10 Mocked now, add real implementation
+        return False
 
 
 open_ai_processor_service: AiProcessorService = OpenAIProcessorService(

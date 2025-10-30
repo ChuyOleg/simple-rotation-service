@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi.responses import JSONResponse
 
 
@@ -11,6 +13,18 @@ class RetryableException(Exception):
 
 class NotFoundTokenException(Exception):
     pass
+
+
+class AiHttpCallException(Exception):
+    def __init__(self, data: Any, inner: Exception | None = None):
+        super().__init__()
+        self.data = data
+        self.inner = inner
+
+    def __str__(self):
+        if self.inner:
+            return f"{self.data} (caused by {repr(self.inner)})"
+        return self.data
 
 
 async def internal_exception_handler(request, response):
