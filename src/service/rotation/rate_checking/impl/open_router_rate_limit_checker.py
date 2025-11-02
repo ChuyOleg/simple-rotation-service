@@ -36,4 +36,4 @@ class OpenRouterRateLimitChecker(RateLimitChecker):
 
 open_router_rate_limit_checker = OpenRouterRateLimitChecker(
     url="https://openrouter.ai/api/v1/chat/completions",
-    model="deepseek/deepseek-chat-v3.1:free")
+    model="meta-llama/llama-4-scout:free")
