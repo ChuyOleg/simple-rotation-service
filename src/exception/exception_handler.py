@@ -7,15 +7,15 @@ class InternalException(Exception):
     pass
 
 
-class RetryableException(Exception):
-    pass
-
-
 class NotFoundTokenException(Exception):
     pass
 
 
-class AiHttpCallException(Exception):
+class RotationRetryableException(Exception):
+    pass
+
+
+class HttpCallRetryableException(Exception):
     def __init__(self, data: Any, inner: Exception | None = None):
         super().__init__()
         self.data = data
@@ -27,16 +27,27 @@ class AiHttpCallException(Exception):
         return self.data
 
 
+class AiHttpCallRetryableException(HttpCallRetryableException):
+    def __init__(self, data: Any, inner: Exception | None = None):
+        super().__init__(data, inner)
+
+
 async def internal_exception_handler(request, response):
     return JSONResponse(
         status_code=500,
         content={"error": "Internal Server Error"})
 
 
-async def retryable_exception_handler(request, response):
+async def internal_retryable_exception_handler(request, response):
     return JSONResponse(
         status_code=500,
-        content={"error": "Something went wrong, RetryableException."})
+        content={"error": "Something went wrong, HttpCallRetryableException."})
+
+
+async def rotation_retryable_exception_handler(request, response):
+    return JSONResponse(
+        status_code=500,
+        content={"error": "Something went wrong, RotationRetryableException."})
 
 
 async def not_found_token_exception_handler(request, response):

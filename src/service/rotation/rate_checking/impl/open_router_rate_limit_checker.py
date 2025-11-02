@@ -31,8 +31,16 @@ class OpenRouterRateLimitChecker(RateLimitChecker):
                 }
             )
 
-        return resp.status_code < 400
+        data = resp.json()
 
+        error: dict = data.get("error", {}) if isinstance(data, dict) else {}
+        code: int = error.get("code")
+        message: str = str(error)
+
+        if 429 == code and "Rate limit exceeded" in message:
+            return False
+
+        return True
 
 open_router_rate_limit_checker = OpenRouterRateLimitChecker(
     url="https://openrouter.ai/api/v1/chat/completions",

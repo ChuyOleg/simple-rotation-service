@@ -1,9 +1,10 @@
 from abc import ABC
 from typing import override
 
+import backoff
 import httpx
 
-from src.exception.exception_handler import NotFoundTokenException, AiHttpCallException
+from src.exception.exception_handler import NotFoundTokenException, AiHttpCallRetryableException
 from src.model.api_provider import ApiProvider
 from src.model.api_token import ApiToken
 from src.model.event import create_system_message_prompt, create_user_message_prompt
@@ -19,9 +20,12 @@ logger = get_logger(__name__)
 class AiProcessorService(RotatableService, ABC):
 
     def __init__(self, api_provider: ApiProvider, base_url: str,
+                 http_call_retry_count: int, rotation_retry_count: int,
                  ai_api_errors_repository: AiApiErrorsRepository, token_service: TokenService):
+        super().__init__(rotation_retry_count=rotation_retry_count)
         self._api_provider = api_provider
         self._base_url = base_url
+        self._http_call_retry_count = http_call_retry_count
         self._ai_api_errors_repository = ai_api_errors_repository
         self._token_service = token_service
         self._api_key = None
@@ -31,11 +35,19 @@ class AiProcessorService(RotatableService, ABC):
         system_part: dict[str, str] = create_system_message_prompt()
         user_part: dict[str, str] = create_user_message_prompt(raw_event)
 
-        processed_event = await self._process_with_retry(model, system_part, user_part)
+        processed_event = await self.process_with_token_rotation(model, system_part, user_part)
         return processed_event
 
     @override
-    async def _process_internal(self, model, system_part, user_part) -> UkrainianEvent:
+    async def _process_with_retry(self, model, system_part, user_part) -> UkrainianEvent:
+        async def wrapped():
+            return await self._process_with_retry_internal(model, system_part, user_part)
+
+        retryable = backoff.on_exception(
+            backoff.expo, AiHttpCallRetryableException, max_tries=self._http_call_retry_count)(wrapped)
+        return await retryable()
+
+    async def _process_with_retry_internal(self, model, system_part, user_part):
         if self._api_key is None:
             await self._rotate_api_key()
 
@@ -64,13 +76,13 @@ class AiProcessorService(RotatableService, ABC):
         except Exception as e:
             data = response.json()
             await self._ai_api_errors_repository.save_error(str(data), model)
-            raise AiHttpCallException(data, e)
+            raise AiHttpCallRetryableException(data, e)
 
     # ToDo: 19/10 What the behaviour when parallel threads call this method.
     @override
     async def _rotate_api_key(self) -> None:
-        logger.info(f"Rotating {self._api_provider} API key (token_id: {self._active_api_token_id}).")
-        await self._token_service.lock(self._active_api_token_id)
+        if self._api_key is not None:
+            await self._token_service.lock(self._active_api_token_id)
 
         api_token: ApiToken = await self._token_service.get_random_by_api_provider(self._api_provider)
         if api_token is None:

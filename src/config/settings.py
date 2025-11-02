@@ -31,15 +31,29 @@ class TokenEncryptionSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-class RotationSettings(BaseSettings):
+class RotationJobSettings(BaseSettings):
     cron: str = Field(alias="ROTATION_CRON")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-class RotationTesterSettings(BaseSettings):
+class RotationTesterJobSettings(BaseSettings):
     cron: str = Field(alias="ROTATION_TESTER_CRON")
     events_limit: int = Field(alias="ROTATION_TESTER_EVENTS_LIMIT")
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+class OpenRouterSettings(BaseSettings):
+    rotation_retry_count: int = Field(alias="OPEN_ROUTER_ROTATION_RETRY_COUNT")
+    http_call_retry_count: int = Field(alias="OPEN_ROUTER_HTTP_CALL_RETRY_COUNT")
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+class OpenAiSettings(BaseSettings):
+    rotation_retry_count: int = Field(alias="OPEN_AI_ROTATION_RETRY_COUNT")
+    http_call_retry_count: int = Field(alias="OPEN_AI_HTTP_CALL_RETRY_COUNT")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -49,8 +63,12 @@ class Settings(BaseSettings):
 
     postgres: PostgresSettings = Field(default_factory=PostgresSettings)
     token_encryption: TokenEncryptionSettings = Field(default_factory=TokenEncryptionSettings)
-    rotation: RotationSettings = Field(default_factory=RotationSettings)
-    rotation_tester: RotationTesterSettings = Field(default_factory=RotationTesterSettings)
+
+    open_router_settings: OpenRouterSettings = Field(default_factory=OpenRouterSettings)
+    open_ai_settings: OpenAiSettings = Field(default_factory=OpenAiSettings)
+
+    rotation: RotationJobSettings = Field(default_factory=RotationJobSettings)
+    rotation_tester: RotationTesterJobSettings = Field(default_factory=RotationTesterJobSettings)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
