@@ -4,12 +4,13 @@ from typing import override
 import backoff
 import httpx
 
-from src.exception.exception_handler import NotFoundTokenException, AiHttpCallRetryableException
+from src.exception.exception_handler import NotFoundTokenException, AiHttpCallRetryableException, RotatableException
 from src.model.api_provider import ApiProvider
 from src.model.api_token import ApiToken
 from src.model.event import create_system_message_prompt, create_user_message_prompt
 from src.model.ukrainian_event import UkrainianEvent
 from src.repository.ai_api_error_repository import AiApiErrorsRepository
+from src.service.rotation.rate_checking.rate_limit_checker import RateLimitChecker
 from src.service.rotation.rotatable_service import RotatableService
 from src.service.rotation.token_service import TokenService
 from src.util.logger import get_logger
@@ -21,13 +22,15 @@ class AiProcessorService(RotatableService, ABC):
 
     def __init__(self, api_provider: ApiProvider, base_url: str,
                  http_call_retry_count: int, rotation_retry_count: int,
-                 ai_api_errors_repository: AiApiErrorsRepository, token_service: TokenService):
+                 ai_api_errors_repository: AiApiErrorsRepository, token_service: TokenService,
+                 rate_limit_checker: RateLimitChecker):
         super().__init__(rotation_retry_count=rotation_retry_count)
         self._api_provider = api_provider
         self._base_url = base_url
         self._http_call_retry_count = http_call_retry_count
         self._ai_api_errors_repository = ai_api_errors_repository
         self._token_service = token_service
+        self._rate_limit_checker = rate_limit_checker
         self._api_key = None
         self._active_api_token_id = None
 
@@ -71,12 +74,15 @@ class AiProcessorService(RotatableService, ABC):
 
             response.raise_for_status()
 
-            data = response.json()
-            return data
+            response_json = response.json()
+            return response_json
         except Exception as e:
-            data = response.json()
-            await self._ai_api_errors_repository.save_error(str(data), model)
-            raise AiHttpCallRetryableException(data, e)
+            response_json = response.json()
+            await self._ai_api_errors_repository.save_error(str(response_json), model)
+            if self._rate_limit_checker.is_rate_limit_exception(response_json):
+                logger.warn(f"Rate limit exceeded for Token (id={self._active_api_token_id})")
+                raise RotatableException(response_json, e)
+            raise AiHttpCallRetryableException(response_json, e)
 
     # ToDo: 19/10 What the behaviour when parallel threads call this method.
     @override

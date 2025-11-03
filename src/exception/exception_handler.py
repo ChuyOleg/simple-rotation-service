@@ -11,23 +11,19 @@ class NotFoundTokenException(Exception):
     pass
 
 
-class RotationRetryableException(Exception):
-    pass
-
-
-class HttpCallRetryableException(Exception):
-    def __init__(self, data: Any, inner: Exception | None = None):
+class RotatableException(Exception):
+    def __init__(self, http_response_json: Any, inner: Exception | None = None):
         super().__init__()
-        self.data = data
+        self.http_response_json = http_response_json
         self.inner = inner
 
     def __str__(self):
         if self.inner:
-            return f"{self.data} (caused by {repr(self.inner)})"
-        return self.data
+            return f"{self.http_response_json} (caused by {repr(self.inner)})"
+        return self.http_response_json
 
 
-class AiHttpCallRetryableException(HttpCallRetryableException):
+class AiHttpCallRetryableException(RotatableException):
     def __init__(self, data: Any, inner: Exception | None = None):
         super().__init__(data, inner)
 

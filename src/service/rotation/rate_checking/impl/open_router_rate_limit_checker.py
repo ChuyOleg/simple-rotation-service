@@ -1,4 +1,4 @@
-from typing import override
+from typing import override, Any
 
 import httpx
 
@@ -16,6 +16,17 @@ class OpenRouterRateLimitChecker(RateLimitChecker):
         self._model = model
 
     @override
+    def is_rate_limit_exception(self, response_json: Any) -> bool:
+        error: dict = response_json.get("error", {}) if isinstance(response_json, dict) else {}
+        code: int = error.get("code")
+        message: str = str(error)
+
+        if 429 == code and "Rate limit exceeded" in message:
+            return True
+
+        return False
+
+    @override
     async def is_unlocked(self, token: str) -> bool:
         headers = {
             "Authorization": f"Bearer {token}",
@@ -31,16 +42,11 @@ class OpenRouterRateLimitChecker(RateLimitChecker):
                 }
             )
 
-        data = resp.json()
+        response_json = resp.json()
 
-        error: dict = data.get("error", {}) if isinstance(data, dict) else {}
-        code: int = error.get("code")
-        message: str = str(error)
+        _is_rate_limit_exception: bool = self.is_rate_limit_exception(response_json)
+        return not _is_rate_limit_exception
 
-        if 429 == code and "Rate limit exceeded" in message:
-            return False
-
-        return True
 
 open_router_rate_limit_checker = OpenRouterRateLimitChecker(
     url="https://openrouter.ai/api/v1/chat/completions",
