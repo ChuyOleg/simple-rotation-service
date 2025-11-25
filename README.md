@@ -1,4 +1,4 @@
-## Installation
+## Installation.
 
 ### Python 3.12.3 is used.
 
