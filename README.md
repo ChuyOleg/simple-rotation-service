@@ -5,7 +5,7 @@
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd uopp-ai-data-processor
+   cd token-rotation-service
    ```
 
 2. **Create virtual environment**:
