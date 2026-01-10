@@ -20,7 +20,7 @@ class ConnectionPoolManager:
         try:
             self._pool = await asyncpg.create_pool(
                 self._connection_string,
-                min_size=5,
+                min_size=5000,
                 max_size=20,
                 command_timeout=60,
                 server_settings={
